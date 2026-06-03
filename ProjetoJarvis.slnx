@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="ProjetoJarvis.API/ProjetoJarvis.API.csproj" />
+  <Project Path="ProjetoJarvis.Application/ProjetoJarvis.Application.csproj" />
+  <Project Path="ProjetoJarvis.Domain/ProjetoJarvis.Domain.csproj" />
+  <Project Path="ProjetoJarvis.Infraestructure/ProjetoJarvis.Infraestructure.csproj" />
+</Solution>
