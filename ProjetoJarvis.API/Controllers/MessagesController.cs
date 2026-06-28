@@ -1,15 +1,41 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ProjetoJarvis.Application.DTOs;
+using ProjetoJarvis.Application.Interfaces;
 
-namespace ProjetoJarvis.WebApi.Controllers
+namespace ProjetoJarvis.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class MessagesController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult Get()
+        private readonly IMessageService _service;
+
+        public MessagesController(IMessageService service)
         {
-            return Ok("Jarvis funcionando!");
+            _service = service;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetAll()
+        {
+            var messages = await _service.GetAllAsync();
+            return Ok(messages);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<MessageDTO>> GetById(int id)
+        {
+            var message = await _service.GetByIdAsync(id);
+            if (message == null)
+                return NotFound();
+            return Ok(message);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<MessageDTO>> Create(CreateMessageDTO dto)
+        {
+            var message = await _service.AddAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = message.Id }, message);
         }
     }
 }

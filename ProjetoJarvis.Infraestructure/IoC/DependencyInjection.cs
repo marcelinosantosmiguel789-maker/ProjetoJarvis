@@ -17,10 +17,12 @@ namespace ProjetoJarvis.Infraestructure.IoC
                 options.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection")));
 
+            // Repositories
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IMemoryRepository, MemoryRepository>();
             services.AddScoped<IReminderRepository, ReminderRepository>();
             services.AddScoped<IIntegrationRepository, IntegrationRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
 
             return services;
         }

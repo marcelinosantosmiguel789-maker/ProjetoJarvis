@@ -11,7 +11,7 @@ namespace ProjetoJarvis.Infraestructure.Context
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
             optionsBuilder.UseSqlServer(
-                "Server=localhost;Database=JarvisDb;Trusted_Connection=True;TrustServerCertificate=True");
+                "Server=(localdb)\\MSSQLLocalDB;Database=JarvisDb;Trusted_Connection=True;TrustServerCertificate=True");
 
             return new AppDbContext(optionsBuilder.Options);
         }

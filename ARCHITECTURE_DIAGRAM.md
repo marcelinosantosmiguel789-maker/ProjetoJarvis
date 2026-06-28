@@ -1,0 +1,385 @@
+## 🏗️ DIAGRAMA VISUAL DA ARQUITETURA
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     EXTERNAL WORLD (HTTP)                        │
+│                       Client Application                         │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                             ↓
+            ┌────────────────────────────────────┐
+            │      ProjetoJarvis.API             │
+            │   (Controllers & Routing)          │
+            │  ┌──────────────────────────────┐  │
+            │  │ ReminderController           │  │
+            │  │  ├─ GET /api/reminder        │  │
+            │  │  ├─ GET /api/reminder/{id}   │  │
+            │  │  ├─ POST /api/reminder       │  │
+            │  │  ├─ PUT /api/reminder/{id}   │  │
+            │  │  ├─ DELETE /api/reminder/{id}│  │
+            │  │  ├─ GET /api/reminder/pending│  │
+            │  │  ├─ GET /api/reminder/due    │  │
+            │  │  └─ POST /api/reminder/{id}/ │  │
+            │  │        complete               │  │
+            │  └──────────────────────────────┘  │
+            │  (Similar para Message, Conversation,
+            │   Memory, Integration Controllers)   │
+            └────────────────┬───────────────────┘
+                             │
+                    Depends on Services & DTOs
+                             │
+            ┌────────────────▼───────────────────┐
+            │ ProjetoJarvis.Application          │
+            │ (Business Logic & Mapping)         │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │      Interfaces              │  │
+            │ │  IReminderService            │  │
+            │ │  IMessageService             │  │
+            │ │  IConversationService        │  │
+            │ │  IMemoryService              │  │
+            │ │  IIntegrationService         │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │      Services (impl)         │  │
+            │ │  ReminderService             │  │
+            │ │   ├─ Injects Repository      │  │
+            │ │   ├─ Injects AutoMapper      │  │
+            │ │   ├─ Maps Entity → DTO       │  │
+            │ │   ├─ Validates business logic│  │
+            │ │   └─ Returns DTO             │  │
+            │ │  (Similar para outras)       │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │       DTOs                   │  │
+            │ │  ReminderDTO                 │  │
+            │ │  CreateReminderDTO           │  │
+            │ │  UpdateReminderDTO           │  │
+            │ │  MessageDTO, etc...          │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │     AutoMapper               │  │
+            │ │  MappingProfile              │  │
+            │ │   ├─ Reminder → ReminderDTO │  │
+            │ │   ├─ Message → MessageDTO    │  │
+            │ │   ├─ Entity → DTO (all)      │  │
+            │ │   └─ DTO → Entity (all)      │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │     IoC Container            │  │
+            │ │  AddApplication()            │  │
+            │ │   ├─ AddAutoMapper()         │  │
+            │ │   ├─ AddScoped(Services)     │  │
+            │ │   └─ All 5 Services          │  │
+            │ └──────────────────────────────┘  │
+            └────────────────┬───────────────────┘
+                             │
+                  Depends on Domain Interfaces
+                    & Infrastructure Impl
+                             │
+            ┌────────────────▼───────────────────┐
+            │ ProjetoJarvis.Domain               │
+            │ (Core Business Rules)              │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │      Entities                │  │
+            │ │  Reminder                    │  │
+            │ │  Message                     │  │
+            │ │  Conversation                │  │
+            │ │  Memory                      │  │
+            │ │  Integration                 │  │
+            │ │  (Pure domain logic)         │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │    Repository Interfaces     │  │
+            │ │  IReminderRepository         │  │
+            │ │  IMessageRepository          │  │
+            │ │  IConversationRepository     │  │
+            │ │  IMemoryRepository           │  │
+            │ │  IIntegrationRepository      │  │
+            │ └──────────────────────────────┘  │
+            └────────────────┬───────────────────┘
+                             │
+                   Implemented by Infrastructure
+                             │
+            ┌────────────────▼───────────────────┐
+            │ ProjetoJarvis.Infrastructure       │
+            │ (Data Access & Persistence)        │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │  Repository Implementations  │  │
+            │ │  ReminderRepository          │  │
+            │ │  MessageRepository           │  │
+            │ │  ConversationRepository      │  │
+            │ │  MemoryRepository            │  │
+            │ │  IntegrationRepository       │  │
+            │ │  (Implement IRepository)     │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │      AppDbContext            │  │
+            │ │  (EF Core DbContext)         │  │
+            │ │   ├─ DbSet<Reminder>         │  │
+            │ │   ├─ DbSet<Message>          │  │
+            │ │   ├─ DbSet<Conversation>     │  │
+            │ │   ├─ DbSet<Memory>           │  │
+            │ │   └─ DbSet<Integration>      │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │    Entity Configurations     │  │
+            │ │  (Fluent API Setup)          │  │
+            │ └──────────────────────────────┘  │
+            │                                    │
+            │ ┌──────────────────────────────┐  │
+            │ │      IoC Container           │  │
+            │ │  AddInfrastructure()         │  │
+            │ │   ├─ AddDbContext()          │  │
+            │ │   └─ AddScoped(Repositories)│  │
+            │ └──────────────────────────────┘  │
+            └────────────────┬───────────────────┘
+                             │
+                             ↓
+                    ┌────────────────┐
+                    │  SQL Server    │
+                    │   Database     │
+                    │                │
+                    │  ✓ Reminders   │
+                    │  ✓ Messages    │
+                    │  ✓ Conversat.  │
+                    │  ✓ Memory      │
+                    │  ✓ Integration │
+                    └────────────────┘
+```
+
+---
+
+## 📊 FLUXO DE UMA REQUISIÇÃO (Request/Response)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. CLIENT sends HTTP request                                    │
+│    POST /api/reminder                                           │
+│    {                                                            │
+│      "title": "Meeting",                                        │
+│      "description": "Team sync",                                │
+│      "executeAt": "2025-06-15T14:30:00Z"                        │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 2. ASP.NET CORE Model Binding                                   │
+│    Deserializes JSON → CreateReminderDTO                        │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 3. CONTROLLER (ReminderController)                              │
+│    [HttpPost]                                                   │
+│    public async Task Create(CreateReminderDTO dto)              │
+│    {                                                            │
+│      var reminder = await _service.AddAsync(dto);              │
+│      ...                                                        │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 4. APPLICATION SERVICE (ReminderService)                        │
+│    AddAsync(CreateReminderDTO dto)                              │
+│    {                                                            │
+│      // AutoMapper: DTO → Entity                                │
+│      var reminder = _mapper.Map<Reminder>(dto);                │
+│      // Business logic: Send to repository                      │
+│      await _repository.AddAsync(reminder);                      │
+│      // Return: Entity → DTO                                    │
+│      return _mapper.Map<ReminderDTO>(reminder);                │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 5. DOMAIN (Reminder Entity)                                     │
+│    new Reminder(title, description, executeAt)                  │
+│    {                                                            │
+│      public int Id { get; private set; }                        │
+│      public string Title { get; private set; }                  │
+│      public string Description { get; private set; }            │
+│      public DateTime ExecuteAt { get; private set; }            │
+│      public bool Completed { get; private set; }                │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 6. INFRASTRUCTURE REPOSITORY (ReminderRepository)               │
+│    AddAsync(Reminder reminder)                                  │
+│    {                                                            │
+│      _context.Reminders.Add(reminder);                          │
+│      await _context.SaveChangesAsync();                         │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 7. DATABASE (SQL Server)                                        │
+│    INSERT INTO Reminders                                        │
+│    (Title, Description, ExecuteAt, Completed)                   │
+│    VALUES ('Meeting', 'Team sync', ..., 0)                      │
+│                                                                 │
+│    ✓ Row inserted with auto-generated ID                        │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 8. REMINDER RETURNED FROM DATABASE                              │
+│    With Id = 1 (auto-generated)                                 │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 9. BACK TO SERVICE                                              │
+│    ReminderDTO reminder = _mapper.Map<ReminderDTO>(entity);     │
+│    {                                                            │
+│      Id: 1,                                                     │
+│      Title: "Meeting",                                          │
+│      Description: "Team sync",                                  │
+│      ReminderDate: "2025-06-15T14:30:00Z",                      │
+│      IsCompleted: false                                         │
+│    }                                                            │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 10. BACK TO CONTROLLER                                          │
+│     return CreatedAtAction(nameof(GetById),                     │
+│       new { id = reminder.Id }, reminder);                      │
+│     → HTTP 201 Created                                          │
+│     → Location: /api/reminder/1                                 │
+│     → Body: ReminderDTO (JSON)                                  │
+└────────────────────┬────────────────────────────────────────────┘
+                     │
+┌────────────────────▼────────────────────────────────────────────┐
+│ 11. HTTP RESPONSE to CLIENT                                     │
+│     Status: 201 Created                                         │
+│     Headers:                                                    │
+│       Location: /api/reminder/1                                 │
+│     Body:                                                       │
+│     {                                                           │
+│       "id": 1,                                                  │
+│       "title": "Meeting",                                       │
+│       "description": "Team sync",                               │
+│       "reminderDate": "2025-06-15T14:30:00Z",                   │
+│       "isCompleted": false                                      │
+│     }                                                           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 FLUXO DE DEPENDÊNCIAS
+
+```
+┌──────────────────┐
+│   API            │
+│   (Controllers)  │
+└────────┬─────────┘
+         │
+         │ depends on
+         │
+         ▼
+    ┌──────────────────────────────┐
+    │    APPLICATION               │
+    │ - Services (IReminderService)│
+    │ - DTOs                        │
+    │ - AutoMapper Profiles         │
+    │ - IoC Container               │
+    └────────┬──────────────────────┘
+             │
+             │ depends on
+             │
+             ▼
+    ┌──────────────────────────────┐
+    │     DOMAIN                   │
+    │ - Entities (Reminder)        │
+    │ - Repository Interfaces      │
+    │   (IReminderRepository)       │
+    │ - Business Rules             │
+    └────────┬──────────────────────┘
+             │
+             │ implemented by
+             │
+             ▼
+    ┌──────────────────────────────┐
+    │   INFRASTRUCTURE             │
+    │ - Repository Impl.           │
+    │ - AppDbContext               │
+    │ - Entity Configurations      │
+    │ - IoC Container              │
+    └────────┬──────────────────────┘
+             │
+             │ persists to
+             │
+             ▼
+    ┌──────────────────────────────┐
+    │   DATABASE                   │
+    │ - SQL Server                 │
+    │ - Tables, Indexes, Queries   │
+    └──────────────────────────────┘
+```
+
+---
+
+## 🎯 PRINCÍPIOS RESPEITADOS
+
+### ✅ Domain Isolation
+```
+Domain
+  → No external dependencies
+  → Pure business logic
+  → Entities with constructors
+  → Repository interfaces only
+```
+
+### ✅ Application Layer
+```
+Application
+  → Depends only on Domain
+  → DTOs for external communication
+  → Services implement business use cases
+  → AutoMapper for transformations
+  → No entity returns outside layer
+```
+
+### ✅ Infrastructure Layer
+```
+Infrastructure
+  → Implements Domain interfaces
+  → EF Core DbContext
+  → Repository implementations
+  → No business logic here
+```
+
+### ✅ API Layer
+```
+API
+  → Depends on Application only
+  → Controllers inject IServices
+  → Request/Response DTOs only
+  → No domain entities exposed
+```
+
+---
+
+## 📈 DEPENDENCY GRAPH
+
+```
+API
+  ↓
+Application (Services, DTOs, AutoMapper)
+  ↓
+Domain (Entities, Repository Interfaces)
+  ↓
+Infrastructure (Repository Impl, DbContext)
+  ↓
+Database
+```
+
+**✅ Unidirectional dependency flow = Clean Architecture!**
